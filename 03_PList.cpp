@@ -10,40 +10,12 @@ using namespace std;
 class Value
 {
 public:
-    Value()
-    {
-        string type = "value";
-        string v = "empty";
-    }
     virtual void Print(){};
-    //virtual bool Compare(const int& cmp){};
-    //virtual bool Compare(const string& cmp){};
-    bool Compare(Value* cmp_val)
-    {
-        if (type == cmp_val->type)
-        {
-            if (V() == cmp_val->V())
-            {
-                cout << type << cmp_val->type <<endl;
-                return true;
-            }
-        }
-        else
-        {
-            return false;
-        }
-    }
-    virtual int Type(){};
-    string V()
-    {
-        return v;
-    }
-    //virtual string V(){};
-    //virtual int V(){};
+    virtual Value* Has(const int& cmp){};
+    virtual Value* Has(const string& cmp){};
+    virtual Value* Has(const double& cmp){};
 private:
     string v;
-protected:
-    string type;
 };
 class lINT : public Value
 {
@@ -51,21 +23,58 @@ public:
     lINT(const int& input)
     {
         v = input;
-        type = "int";
     }
-    void Print()
+    void Print() override
     {
         cout << v <<" ";
     }
-
-    int V()
+    lINT* Has(const int& cmp) override
     {
-        return v;
+        if (cmp==v)
+        {
+            return this;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    ~lINT()
+    {
+        cout << v << " dropped" << endl;
     }
 private:
     int v;
-protected:
-    string type;
+};
+
+class lDOUB : public Value
+{
+public:
+    lDOUB(const double& input)
+    {
+        v = input;
+    }
+    void Print() override
+    {
+        cout << v <<" ";
+    }
+    lDOUB* Has(const double& cmp) override
+    {
+        if (cmp==v)
+        {
+            return this;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    ~lDOUB()
+    {
+        cout << v << " dropped" << endl;
+    }
+private:
+    double v;
 };
 
 class lSTR : public Value
@@ -74,35 +83,53 @@ public:
     lSTR(const string& input)
     {
         v = input;
-        type = "string";
     }
-    void Print()
+    void Print() override
     {
         cout << "\""<< v <<"\" ";
     }
-
-
-    string V()
+    lSTR* Has(const string& cmp) override
     {
-        return v;
+        if (cmp==v)
+        {
+            return this;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    ~lSTR()
+    {
+        cout << v << " dropped" << endl;
     }
 private:
     string v;
-protected:
-    string type;
 };
 
 class PList
 {
 private:
+    vector<lINT*> val_int;
+    vector<lSTR*> val_str;
+    vector<lDOUB*> val_doub;
     vector<Value*> val;
 public:
-    void Add(const int& input){val.push_back(new lINT(input));}
-    void Add(const string& input){val.push_back(new lSTR(input));}
-    void Print(){for (Value* el : val) el->Print(); cout << endl;}
-    //void Has(const int& input_cmp){Value* pp = new lINT(input_cmp);for (Value* el : val) cout << el->Compare(pp); cout << endl;}
-    //void Has(const string& input_cmp){for (Value* el : val) cout << el->Compare(new lSTR(input_cmp)); cout << endl;}
-    void getLength(){cout << val.size()<<endl;}
+    //INT
+    void add(const int& input){lINT* a = new lINT(input); val_int.push_back(a); val.push_back(a);}
+    void has(const int& cmp){bool has = 0; for (Value* el : val_int) if (el->Has(cmp) != NULL) has += 1; cout << "has(" << cmp << ")= "<< has <<endl;}
+    void drop(const int& cmp){int i = 0, j = 0;for (i = 0; i < val_int.size(); i++){lINT* p = val_int[i]->Has(cmp);if (p != NULL){for (j = 0; j < val.size(); j++){if (val[j] == p){delete p;val_int.erase(val_int.begin()+i);val.erase(val.begin()+j);}}}}}
+    //STRING
+    void add(const string& input){lSTR* a = new lSTR(input); val_str.push_back(a); val.push_back(a);}
+    void has(const string& cmp){bool has = 0; for (Value* el : val_str) if (el->Has(cmp) != NULL)  has += 1; cout << "has(" << cmp << ")= "<< has <<endl;}
+    void drop(const string& cmp){int i = 0, j = 0;for (i = 0; i < val_str.size(); i++){lSTR* p = val_str[i]->Has(cmp);if (p != NULL){for (j = 0; j < val.size(); j++){if (val[j] == p){delete p;val_str.erase(val_str.begin()+i);val.erase(val.begin()+j);}}}}}
+    //DOUB
+    void add(const double& input){lDOUB* a = new lDOUB(input); val_doub.push_back(a); val.push_back(a);}
+    void has(const double& cmp){bool has = 0; for (Value* el : val_doub) if (el->Has(cmp) != NULL)  has += 1; cout << "has(" << cmp << ")= "<< has <<endl;}
+    void drop(const double& cmp){int i = 0, j = 0;for (i = 0; i < val_doub.size(); i++){lDOUB* p = val_doub[i]->Has(cmp);if (p != NULL){for (j = 0; j < val.size(); j++){if (val[j] == p){delete p;val_doub.erase(val_doub.begin()+i);val.erase(val.begin()+j);}}}}}
+
+    //ALL
+    void print(){for (Value* el : val) el->Print(); cout << endl;}
 
 };
 
@@ -110,15 +137,19 @@ public:
 
 int main()
 {
-    //cout << ("hello"=="hg")<<endl;
-    lINT r(7);
-    cout << r.Compare(new lINT(8)) <<endl;
     PList p;
-    p.Add("hello");
-    p.Add(5);
-    p.Add(7);
-    p.Print();
-    p.Has(7);
+    p.add("hello");
+    p.add(5.87);
+    p.add(5);
+    p.add(7);
+    p.print();
+    p.has(5.87);
+    p.has(8);
+    p.has("hel");
+    p.has("hello");
+    p.drop(7);
+    p.print();
+
     //p.Add("hello");
     return 0;
 }

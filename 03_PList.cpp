@@ -1,8 +1,6 @@
 #include <iostream>
 #include <vector>
-
-
-
+#include <complex>
 
 using namespace std;
 
@@ -14,6 +12,7 @@ public:
     virtual Value* Has(const int& cmp){};
     virtual Value* Has(const string& cmp){};
     virtual Value* Has(const double& cmp){};
+    virtual Value* Has(const complex<double>& cmp){};
 private:
     string v;
 };
@@ -77,6 +76,36 @@ private:
     double v;
 };
 
+class lCOMP : public Value
+{
+public:
+    lCOMP(const complex<double>& input)
+    {
+        v = input;
+    }
+    void Print() override
+    {
+        cout << v <<" ";
+    }
+    lCOMP* Has(const complex<double>& cmp) override
+    {
+        if (cmp==v)
+        {
+            return this;
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    ~lCOMP()
+    {
+        cout << v << " dropped" << endl;
+    }
+private:
+    complex<double> v;
+};
+
 class lSTR : public Value
 {
 public:
@@ -113,6 +142,7 @@ private:
     vector<lINT*> val_int;
     vector<lSTR*> val_str;
     vector<lDOUB*> val_doub;
+    vector<lCOMP*> val_comp;
     vector<Value*> val;
 public:
     //INT
@@ -127,10 +157,12 @@ public:
     void add(const double& input){lDOUB* a = new lDOUB(input); val_doub.push_back(a); val.push_back(a);}
     void has(const double& cmp){bool has = 0; for (Value* el : val_doub) if (el->Has(cmp) != NULL)  has += 1; cout << "has(" << cmp << ")= "<< has <<endl;}
     void drop(const double& cmp){int i = 0, j = 0;for (i = 0; i < val_doub.size(); i++){lDOUB* p = val_doub[i]->Has(cmp);if (p != NULL){for (j = 0; j < val.size(); j++){if (val[j] == p){delete p;val_doub.erase(val_doub.begin()+i);val.erase(val.begin()+j);}}}}}
-
+    //COMPLEX
+    void add(const complex<double>& input){lCOMP* a = new lCOMP(input); val_comp.push_back(a); val.push_back(a);}
+    void has(const complex<double>& cmp){bool has = 0; for (Value* el : val_comp) if (el->Has(cmp) != NULL)  has += 1; cout << "has(" << cmp << ")= "<< has <<endl;}
+    void drop(const complex<double>& cmp){int i = 0, j = 0;for (i = 0; i < val_comp.size(); i++){lCOMP* p = val_comp[i]->Has(cmp);if (p != NULL){for (j = 0; j < val.size(); j++){if (val[j] == p){delete p;val_comp.erase(val_comp.begin()+i);val.erase(val.begin()+j);}}}}}
     //ALL
     void print(){for (Value* el : val) el->Print(); cout << endl;}
-
 };
 
 
@@ -141,15 +173,15 @@ int main()
     p.add("hello");
     p.add(5.87);
     p.add(5);
-    p.add(7);
+    p.add(complex<double>(9,4));
     p.print();
     p.has(5.87);
+    p.has(complex<double>(9,4));
     p.has(8);
     p.has("hel");
     p.has("hello");
     p.drop(7);
+    p.drop(complex<double>(9,4));
     p.print();
-
-    //p.Add("hello");
     return 0;
 }
